@@ -17,6 +17,10 @@ import Queue
 fps = 0
 prevTime = 0;
 
+cam_matrix = pickle.load(open("cam_matrix.p","rb"));
+dist_matrix = pickle.load(open("dist_matrix.p","rb"));
+
+
 class VideoCapture: #this will make a queue that reads the latests frames from the to eliminate delay
     def __init__(self):
         self.camera = cv2.VideoCapture(0)
@@ -52,6 +56,7 @@ aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
 parameters = aruco.DetectorParameters_create()
 corners, ids, rejectedImgPoints = aruco.detectMarkers(gray,aruco_dict,parameters=parameters)
 frame_markers = aruco.drawDetectedMarkers(frame.copy(),corners,ids)
+
 test = "test0"
 class requestHandler(BaseHTTPRequestHandler):
    
@@ -69,7 +74,12 @@ class requestHandler(BaseHTTPRequestHandler):
                 toSend = aruco.drawDetectedMarkers(frame.copy(),corners,ids)
                 toSend = cv2.putText(toSend,"origin",(5,25),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),2,cv2.LINE_AA)
                 toSend = cv2.putText(toSend,"%d" % fps,(5,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),2,cv2.LINE_AA)
+                if(len(corners) > 0):
+                    rot_vec, trans_vec, _ = aruco.estimatePoseSingleMarkers(corners,.1016,cam_matrix,dist_matrix);
+                    axis = np.float32([[4,0,0],[0,4,0],[0,0,-4]]).reshape(-1,3);
+                    imgpts, jac = cv2.projectPoints(axis,rot_vec,trans_vec,cam_matrix,dist_matrix);
 
+                    toSend = aruco.drawAxis(toSend,cam_matrix,dist_matrix,rot_vec,trans_vec,.1);
 #                jpeg = cv2.imencode('.jpg',frame) 
                 self.wfile.write(bytearray(cv2.imencode('.jpg',toSend)[1]))
 #                self.wfile.write(toSend[1])
@@ -87,6 +97,27 @@ class requestHandler(BaseHTTPRequestHandler):
                     cornerArray = corners[i].flatten()
                     for n in range(0,len(cornerArray)):
                         toSend = toSend + str(cornerArray[n])+","
+                    toSend = toSend[:-1] + "<br>"
+
+                self.wfile.write(toSend);
+            elif "3D" in self.path:
+                self.send_response(200)
+                self.send_header('Content-type','text/html')
+                self.end_headers()
+                toSend = ""
+#                for i in range(0,len(ids)):
+#                    toSend = toSend + "," + str(int(ids[i]))
+#                toSend = toSend[1:]
+#                toSend = toSend + "<br>"
+                for i in range(0,len(corners)):
+                    toSend = toSend + str(int(ids[i]))+","
+                    cornerArray = corners[i].flatten()
+                    
+                    if(len(corners) > 0):
+                        rot_vec, trans_vec, _ = aruco.estimatePoseSingleMarkers(corners,.1016,cam_matrix,dist_matrix);
+                        axis = np.float32([[4,0,0],[0,4,0],[0,0,-4]]).reshape(-1,3);
+                        imgpts, jac = cv2.projectPoints(axis,rot_vec,trans_vec,cam_matrix,dist_matrix);
+                        toSend = toSend + str(trans_vec[0][0][0]) + "," + str(trans_vec[0][0][1]) + "," + str(trans_vec[0][0][2])
                     toSend = toSend[:-1] + "<br>"
 
                 self.wfile.write(toSend);
@@ -113,7 +144,12 @@ while True:
 	frame = vidCap.read();
         gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 	corners, ids, rejectedImgPoints = aruco.detectMarkers(gray,aruco_dict,parameters=parameters)
-	frame_markers = aruco.drawDetectedMarkers(frame.copy(),corners,ids)
+        if(len(corners) > 0):
+            rot_vec, trans_vec, _ = aruco.estimatePoseSingleMarkers(corners,.1016,cam_matrix,dist_matrix);
+            axis = np.float32([[4,0,0],[0,4,0],[0,0,-4]]).reshape(-1,3);
+            imgpts, jac = cv2.projectPoints(axis,rot_vec,trans_vec,cam_matrix,dist_matrix);
+            #frame_markers = aruco.drawAxis(frame_markers,cam_matrix,dist_matrix,rot_vec,trans_vec,.1);
+#	frame_markers = aruco.drawDetectedMarkers(frame.copy(),corners,ids)
 #        print("ids: " + str(ids));
 #        print("corners: " + str(corners));
 
