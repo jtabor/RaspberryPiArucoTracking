@@ -16,8 +16,8 @@ import Queue
 fps = 0
 prevTime = 0;
 
-cam_matrix = pickle.load(open("cam_matrix.p","rb"));
-dist_matrix = pickle.load(open("dist_matrix.p","rb"));
+cam_matrix = pickle.load(open("/home/pi/ME439/RaspberryPiArucoTracking/cam_matrix.p","rb"));
+dist_matrix = pickle.load(open("/home/pi/ME439/RaspberryPiArucoTracking/dist_matrix.p","rb"));
 
 
 class VideoCapture: #this will make a queue that reads the latests frames from the to eliminate delay
