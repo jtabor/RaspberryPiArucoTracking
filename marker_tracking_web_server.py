@@ -75,7 +75,7 @@ class requestHandler(BaseHTTPRequestHandler):
                 toSend = cv2.putText(toSend,"%d" % fps,(5,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),2,cv2.LINE_AA)
                 if(len(corners) > 0):
                     for i in range(0,len(corners)):
-                        ret =  aruco.estimatePoseSingleMarkers(corners[i],.1016,cam_matrix,dist_matrix);
+                        ret =  aruco.estimatePoseSingleMarkers(corners[i],.059,cam_matrix,dist_matrix);
                         (rot_vec,trans_vec) = (ret[0][0,0,:],ret[1][0,0,:]);
                         axis = np.float32([[4,0,0],[0,4,0],[0,0,-4]]).reshape(-1,3);
                         imgpts, jac = cv2.projectPoints(axis,rot_vec,trans_vec,cam_matrix,dist_matrix);
@@ -112,7 +112,7 @@ class requestHandler(BaseHTTPRequestHandler):
                     cornerArray = corners[i].flatten()
                     
                     if(len(corners) > 0):
-                        ret = aruco.estimatePoseSingleMarkers(corners[i],.1016,cam_matrix,dist_matrix);
+                        ret = aruco.estimatePoseSingleMarkers(corners[i],.059,cam_matrix,dist_matrix);
                         (rot_vec,trans_vec) = (ret[0][:],ret[1][0][0][:]);
                         axis = np.float32([[4,0,0],[0,4,0],[0,0,-4]]).reshape(-1,3);
                         imgpts, jac = cv2.projectPoints(axis,rot_vec,trans_vec,cam_matrix,dist_matrix);
